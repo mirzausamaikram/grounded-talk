@@ -268,6 +268,215 @@
       }
     }
 
+    /* Welcome Popup */
+    .welcome-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+      z-index: 1001;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .welcome-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .welcome-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8) rotateX(10deg);
+      background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(45, 106, 123, 0.05) 100%);
+      padding: 48px;
+      border-radius: 20px;
+      box-shadow: 0 20px 70px rgba(45, 106, 123, 0.3), 0 0 1px rgba(255, 255, 255, 0.5) inset;
+      border: 2px solid rgba(45, 106, 123, 0.2);
+      z-index: 1002;
+      max-width: 520px;
+      width: 90%;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .welcome-popup.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1) rotateX(0deg);
+      pointer-events: all;
+    }
+
+    .welcome-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: rgba(45, 106, 123, 0.1);
+      color: var(--text-secondary);
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .welcome-close:hover {
+      background: rgba(45, 106, 123, 0.2);
+      color: var(--accent-dark);
+      transform: rotate(90deg);
+    }
+
+    .welcome-content {
+      text-align: center;
+    }
+
+    .welcome-emoji {
+      font-size: 4rem;
+      margin-bottom: 16px;
+      display: inline-block;
+      animation: bounceEmoji 2s ease-in-out infinite;
+    }
+
+    @keyframes bounceEmoji {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .welcome-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent-dark);
+      margin: 0 0 8px 0;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome-subtitle {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin: 0 0 24px 0;
+      font-style: italic;
+    }
+
+    .welcome-stats {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, rgba(45, 106, 123, 0.1), rgba(45, 106, 123, 0.05));
+      padding: 16px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(45, 106, 123, 0.2);
+      min-width: 100px;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent-primary);
+      box-shadow: 0 8px 16px rgba(45, 106, 123, 0.15);
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-primary);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .welcome-description {
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      margin: 0 0 20px 0;
+      line-height: 1.5;
+    }
+
+    .welcome-features {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+      text-align: left;
+      background: rgba(45, 106, 123, 0.05);
+      padding: 16px;
+      border-radius: 12px;
+      border-left: 4px solid var(--accent-primary);
+    }
+
+    .feature {
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    .welcome-cta {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      box-shadow: 0 8px 20px rgba(45, 106, 123, 0.3);
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .welcome-cta:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(45, 106, 123, 0.4);
+    }
+
+    .welcome-footer {
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    @media (max-width: 600px) {
+      .welcome-popup {
+        padding: 32px 24px;
+      }
+
+      .welcome-title {
+        font-size: 1.5rem;
+      }
+
+      .welcome-emoji {
+        font-size: 3rem;
+      }
+
+      .welcome-stats {
+        gap: 8px;
+      }
+
+      .stat-card {
+        min-width: 80px;
+        padding: 12px 8px;
+      }
+    }
+
     /* Exit Intent Popup */
     .exit-intent-popup {
       position: fixed;
@@ -2279,6 +2488,49 @@
   <!-- Back to Top button -->
   <button class="back-to-top" aria-label="Back to top">↑ Top</button>
 
+  <!-- Welcome Popup -->
+  <div class="welcome-overlay" id="welcomeOverlay"></div>
+  <div class="welcome-popup" id="welcomePopup">
+    <button class="welcome-close" id="welcomeClose" aria-label="Close">✕</button>
+    
+    <div class="welcome-content">
+      <div class="welcome-emoji">🌊</div>
+      
+      <h2 class="welcome-title">Welcome to Peer Listening</h2>
+      
+      <p class="welcome-subtitle">Sometimes, all you need is someone who truly listens.</p>
+      
+      <div class="welcome-stats">
+        <div class="stat-card">
+          <div class="stat-number">27+</div>
+          <div class="stat-label">Active Sessions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">4.8★</div>
+          <div class="stat-label">Client Ratings</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">5</div>
+          <div class="stat-label">Languages</div>
+        </div>
+      </div>
+      
+      <p class="welcome-description">
+        I'm Mirza, a trained peer listener. I'm here to listen deeply, without judgment, in your native language.
+      </p>
+      
+      <div class="welcome-features">
+        <div class="feature">✅ Confidential & Safe</div>
+        <div class="feature">✅ No Advice, Just Listening</div>
+        <div class="feature">✅ English, Arabic, Urdu, Hindi, Punjabi</div>
+      </div>
+      
+      <a href="#book" class="welcome-cta">Start with a Free 15-min Intro</a>
+      
+      <p class="welcome-footer">HKD 200 per 50-minute session</p>
+    </div>
+  </div>
+
   <!-- Exit Intent Popup -->
   <div class="exit-intent-overlay" id="exitOverlay"></div>
   <div class="exit-intent-popup" id="exitPopup">
@@ -2490,6 +2742,39 @@
       }
     });
     backToTop?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // Welcome Popup
+    const welcomePopup = document.getElementById('welcomePopup');
+    const welcomeOverlay = document.getElementById('welcomeOverlay');
+    const welcomeClose = document.getElementById('welcomeClose');
+
+    const showWelcomePopup = () => {
+      welcomePopup.classList.add('show');
+      welcomeOverlay.classList.add('show');
+      localStorage.setItem('welcomeShown', 'true');
+    };
+
+    const hideWelcomePopup = () => {
+      welcomePopup.classList.remove('show');
+      welcomeOverlay.classList.remove('show');
+    };
+
+    // Show welcome on page load (if not shown before)
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (!localStorage.getItem('welcomeShown')) {
+          showWelcomePopup();
+        }
+      }, 500); // Delay for nice effect
+    });
+
+    // Close handlers
+    welcomeClose?.addEventListener('click', hideWelcomePopup);
+    welcomeOverlay?.addEventListener('click', hideWelcomePopup);
+
+    // Close when clicking CTA link
+    const welcomeCTA = document.querySelector('.welcome-cta');
+    welcomeCTA?.addEventListener('click', hideWelcomePopup);
 
     // Exit Intent Popup
     let exitIntentShown = false;
