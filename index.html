@@ -25,7 +25,7 @@
   
   <!-- Privacy & security meta policies -->
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'self'; frame-ancestors 'none'; upgrade-insecure-requests; manifest-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'self'; frame-ancestors 'none'; connect-src 'self' https://api.mymemory.translated.net; manifest-src 'self'">
   <style>
     :root {
       --bg-primary: #ffffff;
@@ -1628,12 +1628,21 @@
       font-weight: 700;
       font-size: 24px;
       cursor: pointer;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
       box-shadow: 0 10px 30px rgba(45, 106, 123, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.25);
       transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       animation: floatButton 3.5s ease-in-out infinite;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(20px);
+    }
+
+    .back-to-top.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
     }
 
     .back-to-top:hover {
@@ -2844,59 +2853,7 @@
       <p style="font-size: 0.85rem; color: var(--text-muted); font-style: italic;">Last updated: January 2026</p>
     </section>
 
-    <!-- Free Intro Call Modal -->
-    <div id="freeCallOverlay" class="free-call-overlay"></div>
-    <div id="freeCallModal" class="free-call-modal">
-      <button id="freeCallClose" class="free-call-close">✕</button>
-      
-      <div class="free-call-content">
-        <div style="font-size: 2.5rem; text-align: center; margin-bottom: 12px;">🎧</div>
-        <h2 style="text-align: center; margin: 0 0 8px 0; color: var(--accent-dark);">Book Your Free 15-Min Call</h2>
-        <p style="text-align: center; color: var(--text-secondary); margin: 0 0 20px 0;">
-          Let's chat and see if this is right for you. No strings attached.
-        </p>
-        
-        <form id="freeCallForm" class="free-call-form">
-          <input 
-            type="text" 
-            id="callName" 
-            placeholder="Your name" 
-            required
-            class="form-input-free"
-          />
-          <input 
-            type="email" 
-            id="callEmail" 
-            placeholder="Your email" 
-            required
-            class="form-input-free"
-          />
-          <select 
-            id="callLanguage" 
-            class="form-input-free"
-            required
-          >
-            <option value="">Select your language</option>
-            <option value="en">English 🇬🇧</option>
-            <option value="ur">Urdu 🇵🇰</option>
-            <option value="ar">Arabic 🇸🇦</option>
-            <option value="hi">Hindi 🇮🇳</option>
-            <option value="pa">Punjabi 🇵🇰</option>
-          </select>
-          <input 
-            type="text" 
-            id="callAvailability" 
-            placeholder="When are you usually free? (e.g., evenings, weekends)" 
-            class="form-input-free"
-          />
-          <button type="submit" class="free-call-submit">Confirm Free Call Request</button>
-        </form>
-        
-        <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 12px;">
-          A confirmation email will be sent to you with next steps.
-        </p>
-      </div>
-    </div>
+
 
     <!-- Admin Dashboard (Hidden) -->
     <div id="adminPanel" class="admin-panel">
@@ -3333,12 +3290,10 @@
       welcomeOverlay.classList.remove('show');
     };
 
-    // Show welcome on page load (if not shown before)
+    // Show welcome on page load (always show)
     window.addEventListener('load', () => {
       setTimeout(() => {
-        if (!localStorage.getItem('welcomeShown')) {
-          showWelcomePopup();
-        }
+        showWelcomePopup();
       }, 500); // Delay for nice effect
     });
 
@@ -3818,14 +3773,20 @@
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.shiftKey && e.key === 'A') {
         e.preventDefault();
-        adminPanel.classList.toggle('show');
-        refreshAdminPanel();
+        if (adminPanel) {
+          adminPanel.classList.toggle('show');
+          refreshAdminPanel();
+        } else {
+          console.error('Admin panel element not found');
+        }
       }
     });
 
-    adminClose.addEventListener('click', () => {
-      adminPanel.classList.remove('show');
-    });
+    if (adminClose) {
+      adminClose.addEventListener('click', () => {
+        adminPanel.classList.remove('show');
+      });
+    }
 
     // Admin tabs functionality
     adminTabs.forEach(tab => {
@@ -3934,96 +3895,6 @@
       document.body.removeChild(a);
       alert('✅ File downloaded: ' + filename);
     }
-
-    // Free Intro Call Modal Management
-    const freeCallModal = document.getElementById('freeCallModal');
-    const freeCallOverlay = document.getElementById('freeCallOverlay');
-    const freeCallClose = document.getElementById('freeCallClose');
-    const freeCallForm = document.getElementById('freeCallForm');
-
-    freeCallClose?.addEventListener('click', () => {
-      freeCallModal.classList.remove('show');
-      freeCallOverlay.classList.remove('show');
-    });
-
-    freeCallOverlay?.addEventListener('click', () => {
-      freeCallModal.classList.remove('show');
-      freeCallOverlay.classList.remove('show');
-    });
-
-    freeCallForm?.addEventListener('submit', (e) => {
-      e.preventDefault();
-
-      const name = document.getElementById('callName').value.trim();
-      const email = document.getElementById('callEmail').value.trim();
-      const language = document.getElementById('callLanguage').value;
-      const availability = document.getElementById('callAvailability').value.trim();
-      const message = document.getElementById('callMessage').value.trim();
-
-      if (name && email && language && availability) {
-        // Save to localStorage
-        const freeIntroCalls = JSON.parse(localStorage.getItem('freeIntroCalls') || '[]');
-        freeIntroCalls.push({
-          name,
-          email,
-          language,
-          availability,
-          message,
-          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
-        });
-        localStorage.setItem('freeIntroCalls', JSON.stringify(freeIntroCalls));
-
-        // Show success message
-        alert(`✅ Thanks ${name}! I'll reach out to ${email} soon to schedule your free call. 🎧`);
-
-        // Close modal
-        freeCallModal.classList.remove('show');
-        freeCallOverlay.classList.remove('show');
-
-        // Reset form
-        freeCallForm.reset();
-
-        // Update admin panel if visible
-        refreshAdminPanel();
-      }
-    });
-
-    // Update refreshAdminPanel to include free calls
-    const originalRefreshAdminPanel = refreshAdminPanel;
-    refreshAdminPanel = function() {
-      const directMessages = JSON.parse(localStorage.getItem('directMessages') || '[]');
-      const freeIntroCalls = JSON.parse(localStorage.getItem('freeIntroCalls') || '[]');
-
-      // Update messages tab
-      if (directMessages.length === 0) {
-        messagesList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No messages yet</p>';
-      } else {
-        messagesList.innerHTML = directMessages.map((msg, idx) => `
-          <div class="message-item">
-            <div class="message-from">📧 ${escapeHTML(msg.name)} (${escapeHTML(msg.email)})</div>
-            <div class="message-text">${escapeHTML(msg.message)}</div>
-            ${msg.englishTranslation ? `<div class="message-text" style="opacity: 0.7; font-style: italic; margin-top: 6px;">🔤 ${escapeHTML(msg.englishTranslation)}</div>` : ''}
-            <div class="message-time">🕐 ${msg.timestamp || 'N/A'}</div>
-          </div>
-        `).join('');
-      }
-
-      // Update free calls tab
-      const callsList = document.getElementById('callsList');
-      if (freeIntroCalls.length === 0) {
-        callsList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No free intro call bookings yet</p>';
-      } else {
-        callsList.innerHTML = freeIntroCalls.map((call, idx) => `
-          <div class="message-item">
-            <div class="message-from">🎧 ${escapeHTML(call.name)} (${escapeHTML(call.email)})</div>
-            <div class="message-text"><strong>Language:</strong> ${call.language}</div>
-            <div class="message-text"><strong>Availability:</strong> ${escapeHTML(call.availability)}</div>
-            ${call.message ? `<div class="message-text"><strong>Notes:</strong> ${escapeHTML(call.message)}</div>` : ''}
-            <div class="message-time">🕐 ${call.timestamp || 'N/A'}</div>
-          </div>
-        `).join('');
-      }
-    };
   </script>
 
 </body>
