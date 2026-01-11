@@ -495,6 +495,12 @@
       padding: 0 4px;
     }
 
+    .language-badge {
+      display: inline-block;
+      margin-right: 6px;
+      font-size: 0.95rem;
+    }
+
     .typing-indicator {
       display: flex;
       gap: 4px;
@@ -2492,8 +2498,44 @@
       localStorage.setItem('exitIntentTime', Date.now().toString());
     }
 
-    // Chat Widget System
+    // Chat Widget System with Translation
     const chatWidget = {
+      // Language detection using character ranges
+      detectLanguage(text) {
+        // Chinese (Hanzi/Kanji)
+        if (/[\u4E00-\u9FFF]/.test(text)) return 'zh';
+        // Japanese Hiragana/Katakana
+        if (/[\u3040-\u309F\u30A0-\u30FF]/.test(text)) return 'ja';
+        // Korean Hangul
+        if (/[\uAC00-\uD7AF]/.test(text)) return 'ko';
+        // Arabic
+        if (/[\u0600-\u06FF]/.test(text)) return 'ar';
+        // Hindi/Devanagari
+        if (/[\u0900-\u097F]/.test(text)) return 'hi';
+        // Spanish (heuristic - common Spanish words)
+        if (/\b(hola|gracias|por favor|cómo|qué)\b/i.test(text)) return 'es';
+        // Urdu/Persian
+        if (/[\u0600-\u06FF]/.test(text)) return 'ur';
+        // Default to English
+        return 'en';
+      },
+
+      // Translate text using MyMemory API (free, no key needed)
+      async translateText(text, sourceLang, targetLang) {
+        if (sourceLang === targetLang) return text;
+        
+        try {
+          const response = await fetch(
+            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`
+          );
+          const data = await response.json();
+          return data.responseData?.translatedText || text;
+        } catch (error) {
+          console.log('Translation unavailable, showing original:', error);
+          return text;
+        }
+      },
+
       // FAQ Database for AI responses
       faqs: {
         price: {
@@ -2634,36 +2676,57 @@
           messageInput.focus();
         });
 
-        // Chat input handling
-        const sendMessage = () => {
+        // Chat input handling with translation
+        const sendMessage = async () => {
           const text = chatInput.value.trim();
           if (text) {
-            // Add user message
+            const userLanguage = this.detectLanguage(text);
+            
+            // Display original user message
             this.messages.push({
               type: 'user',
               text: text,
+              language: userLanguage,
               timestamp: this.getTimestamp()
             });
             this.saveMessages();
-            this.displayMessage('user', text);
+            this.displayMessage('user', text, userLanguage);
             chatInput.value = '';
 
             // Show typing indicator
             this.displayMessage('typing', '');
-            setTimeout(() => {
+            
+            // Translate user message to English for processing
+            let englishText = text;
+            if (userLanguage !== 'en') {
+              englishText = await this.translateText(text, userLanguage, 'en');
+            }
+
+            setTimeout(async () => {
               // Remove typing indicator and add AI response
               const lastMessage = messagesContainer.lastChild;
               if (lastMessage?.classList.contains('typing-indicator')) {
                 lastMessage.remove();
               }
-              const response = this.getAIResponse(text);
+              
+              // Get response based on English translation
+              let response = this.getAIResponse(englishText);
+              
+              // Translate response back to user's language if needed
+              let translatedResponse = response;
+              if (userLanguage !== 'en') {
+                translatedResponse = await this.translateText(response, 'en', userLanguage);
+              }
+              
               this.messages.push({
                 type: 'bot',
-                text: response,
+                text: translatedResponse,
+                language: userLanguage,
+                originalText: response,
                 timestamp: this.getTimestamp()
               });
               this.saveMessages();
-              this.displayMessage('bot', response);
+              this.displayMessage('bot', translatedResponse, userLanguage);
             }, 800);
           }
         };
@@ -2676,25 +2739,36 @@
           }
         });
 
-        // Direct message handling
-        messageSend.addEventListener('click', () => {
+        // Direct message handling with translation
+        messageSend.addEventListener('click', async () => {
           const name = document.getElementById('visitorName').value.trim();
           const email = document.getElementById('visitorEmail').value.trim();
           const message = messageInput.value.trim();
 
           if (name && email && message) {
+            const msgLanguage = chatWidget.detectLanguage(message);
+            
+            // Translate to English if needed for your reference
+            let englishMessage = message;
+            if (msgLanguage !== 'en') {
+              englishMessage = await chatWidget.translateText(message, msgLanguage, 'en');
+            }
+            
             // Save message to localStorage
             const directMessages = JSON.parse(localStorage.getItem('directMessages') || '[]');
             directMessages.push({
               name,
               email,
               message,
+              englishTranslation: msgLanguage !== 'en' ? englishMessage : null,
+              language: msgLanguage,
               timestamp: this.getTimestamp()
             });
             localStorage.setItem('directMessages', JSON.stringify(directMessages));
 
             // Show confirmation
             messageSend.textContent = '✓ Message saved!';
+
             messageSend.disabled = true;
             messageForm.reset();
             
@@ -2709,10 +2783,21 @@
         this.displayAllMessages();
       },
 
-      // Display message in chat
-      displayMessage(type, text) {
+      // Display message in chat with language indicator
+      displayMessage(type, text, language = 'en') {
         const messagesContainer = document.getElementById('messagesContainer');
         const messageEl = document.createElement('div');
+        
+        const languageFlags = {
+          'en': '🇬🇧',
+          'zh': '🇨🇳',
+          'ja': '🇯🇵',
+          'ko': '🇰🇷',
+          'es': '🇪🇸',
+          'ur': '🇵🇰',
+          'ar': '🇸🇦',
+          'hi': '🇮🇳'
+        };
         
         if (type === 'typing') {
           messageEl.className = 'message bot-message typing-indicator';
@@ -2722,22 +2807,45 @@
           const timestamp = type === 'user' ? 
             this.messages[this.messages.length - 1]?.timestamp : 
             this.messages[this.messages.length - 1]?.timestamp;
-          messageEl.innerHTML = `<div class="message-text">${this.escapeHtml(text)}</div><div class="message-time">${timestamp || this.getTimestamp()}</div>`;
+          
+          const langFlag = language !== 'en' ? `<span class="language-badge">${languageFlags[language] || '🌐'}</span>` : '';
+          messageEl.innerHTML = `<div class="message-text">${langFlag}${this.escapeHtml(text)}</div><div class="message-time">${timestamp || this.getTimestamp()}</div>`;
         }
         
         messagesContainer.appendChild(messageEl);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
       },
 
-      // Display all stored messages
+      // Display all stored messages with translation
       displayAllMessages() {
         const messagesContainer = document.getElementById('messagesContainer');
         messagesContainer.innerHTML = '';
         
+        // Show welcome message
+        const welcomeEl = document.createElement('div');
+        welcomeEl.className = 'message bot-message';
+        welcomeEl.innerHTML = `<div class="message-text">Hi there! 👋 I'm here to answer common questions. What can I help you with?</div><div class="message-time">just now</div>`;
+        messagesContainer.appendChild(welcomeEl);
+        
         this.messages.forEach(msg => {
           const messageEl = document.createElement('div');
           messageEl.className = `message ${msg.type}-message`;
-          messageEl.innerHTML = `<div class="message-text">${this.escapeHtml(msg.text)}</div><div class="message-time">${msg.timestamp || this.getTimestamp()}</div>`;
+          
+          const languageFlags = {
+            'en': '🇬🇧',
+            'zh': '🇨🇳',
+            'ja': '🇯🇵',
+            'ko': '🇰🇷',
+            'es': '🇪🇸',
+            'ur': '🇵🇰',
+            'ar': '🇸🇦',
+            'hi': '🇮🇳'
+          };
+          
+          const lang = msg.language || 'en';
+          const langFlag = lang !== 'en' ? `<span class="language-badge">${languageFlags[lang] || '🌐'}</span>` : '';
+          
+          messageEl.innerHTML = `<div class="message-text">${langFlag}${this.escapeHtml(msg.text)}</div><div class="message-time">${msg.timestamp || this.getTimestamp()}</div>`;
           messagesContainer.appendChild(messageEl);
         });
         
