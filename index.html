@@ -884,6 +884,202 @@
       }
     }
 
+    /* Admin Panel Styles */
+    .admin-panel {
+      position: fixed;
+      bottom: 20px;
+      right: 90px;
+      width: 420px;
+      max-height: 600px;
+      background: var(--bg-primary);
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      z-index: 1500;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border-color);
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+    }
+
+    .admin-panel.show {
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white;
+      border-radius: 12px 12px 0 0;
+      border-bottom: 1px solid var(--accent-dark);
+    }
+
+    .admin-header h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .admin-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .admin-close:hover {
+      transform: rotate(90deg);
+      transition: transform 0.2s ease;
+    }
+
+    .admin-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+    }
+
+    .admin-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 12px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .admin-tab.active {
+      color: var(--accent-primary);
+      border-bottom-color: var(--accent-primary);
+    }
+
+    .admin-tab:hover {
+      background: rgba(45, 106, 123, 0.05);
+    }
+
+    .admin-tab-content {
+      padding: 16px;
+      overflow-y: auto;
+      flex: 1;
+      display: none;
+    }
+
+    .admin-tab-content.active {
+      display: block;
+    }
+
+    .messages-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .message-item {
+      background: var(--bg-secondary);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      font-size: 0.85rem;
+    }
+
+    .message-from {
+      font-weight: 600;
+      color: var(--accent-primary);
+      margin-bottom: 4px;
+    }
+
+    .message-text {
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      word-wrap: break-word;
+    }
+
+    .message-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .admin-btn {
+      width: 100%;
+      padding: 10px 12px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-bottom: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .admin-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(45, 106, 123, 0.3);
+    }
+
+    .admin-btn.admin-danger {
+      background: linear-gradient(135deg, #d32f2f, #c62828);
+    }
+
+    .admin-btn.admin-danger:hover {
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+    }
+
+    .admin-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 520px;
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #6c63ff, #5a54d4);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 1.3rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+      transition: all 0.2s ease;
+      z-index: 1499;
+      display: none;
+    }
+
+    .admin-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(108, 99, 255, 0.4);
+    }
+
+    .admin-toggle.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 768px) {
+      .admin-panel {
+        width: calc(100% - 40px);
+        right: 20px;
+        max-height: 400px;
+      }
+
+      .admin-toggle {
+        bottom: 100px;
+        right: 20px;
+      }
+    }
+
 
     .exit-intent-close {
       position: absolute;
@@ -2408,6 +2604,31 @@
       <p style="font-size: 0.85rem; color: var(--text-muted); font-style: italic;">Last updated: January 2026</p>
     </section>
 
+    <!-- Admin Dashboard (Hidden) -->
+    <div id="adminPanel" class="admin-panel">
+      <div class="admin-header">
+        <h3>📊 Admin Dashboard</h3>
+        <button id="adminClose" class="admin-close">✕</button>
+      </div>
+      
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="messages">💌 Messages</button>
+        <button class="admin-tab" data-tab="export">📥 Export Data</button>
+      </div>
+
+      <div id="messagesTab" class="admin-tab-content active">
+        <div id="messagesList" class="messages-list">
+          <p style="text-align: center; color: var(--text-muted);">No messages yet</p>
+        </div>
+      </div>
+
+      <div id="exportTab" class="admin-tab-content">
+        <button id="exportJSON" class="admin-btn">📥 Download as JSON</button>
+        <button id="exportCSV" class="admin-btn">📊 Download as CSV</button>
+        <button id="clearData" class="admin-btn admin-danger">🗑️ Clear All Data</button>
+      </div>
+    </div>
+
   </div>
 
   <!-- Sticky mobile footer CTA -->
@@ -3167,6 +3388,120 @@
 
     // Initialize chat widget when DOM is ready
     chatWidget.init();
+
+    // Admin Panel Management
+    const adminPanel = document.getElementById('adminPanel');
+    const adminClose = document.getElementById('adminClose');
+    const adminTabs = document.querySelectorAll('.admin-tab');
+    const adminTabContents = document.querySelectorAll('.admin-tab-content');
+    const messagesList = document.getElementById('messagesList');
+    const exportJSON = document.getElementById('exportJSON');
+    const exportCSV = document.getElementById('exportCSV');
+    const clearData = document.getElementById('clearData');
+
+    // Keyboard shortcut to open admin: Ctrl+Shift+A
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        adminPanel.classList.toggle('show');
+        refreshAdminPanel();
+      }
+    });
+
+    adminClose.addEventListener('click', () => {
+      adminPanel.classList.remove('show');
+    });
+
+    // Admin tabs functionality
+    adminTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabName = tab.dataset.tab;
+        
+        // Remove active from all tabs and contents
+        adminTabs.forEach(t => t.classList.remove('active'));
+        adminTabContents.forEach(tc => tc.classList.remove('active'));
+        
+        // Add active to clicked tab and corresponding content
+        tab.classList.add('active');
+        document.getElementById(tabName + 'Tab').classList.add('active');
+      });
+    });
+
+    // Refresh admin panel data
+    function refreshAdminPanel() {
+      const directMessages = JSON.parse(localStorage.getItem('directMessages') || '[]');
+      
+      if (directMessages.length === 0) {
+        messagesList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No messages yet</p>';
+        return;
+      }
+
+      messagesList.innerHTML = directMessages.map((msg, idx) => `
+        <div class="message-item">
+          <div class="message-from">📧 ${escapeHTML(msg.name)} (${escapeHTML(msg.email)})</div>
+          <div class="message-text">${escapeHTML(msg.message)}</div>
+          ${msg.englishTranslation ? `<div class="message-text" style="opacity: 0.7; font-style: italic; margin-top: 6px;">🔤 ${escapeHTML(msg.englishTranslation)}</div>` : ''}
+          <div class="message-time">🕐 ${msg.timestamp || 'N/A'}</div>
+        </div>
+      `).join('');
+    }
+
+    // Export as JSON
+    exportJSON.addEventListener('click', () => {
+      const directMessages = JSON.parse(localStorage.getItem('directMessages') || '[]');
+      const dataStr = JSON.stringify(directMessages, null, 2);
+      downloadFile(dataStr, 'messages.json', 'application/json');
+    });
+
+    // Export as CSV
+    exportCSV.addEventListener('click', () => {
+      const directMessages = JSON.parse(localStorage.getItem('directMessages') || '[]');
+      const headers = ['Name', 'Email', 'Message', 'Language', 'Timestamp'];
+      const rows = directMessages.map(msg => [
+        msg.name,
+        msg.email,
+        msg.message,
+        msg.language || 'en',
+        msg.timestamp
+      ]);
+
+      let csv = headers.join(',') + '\n';
+      rows.forEach(row => {
+        csv += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',') + '\n';
+      });
+
+      downloadFile(csv, 'messages.csv', 'text/csv');
+    });
+
+    // Clear all data
+    clearData.addEventListener('click', () => {
+      if (confirm('🔴 Are you sure you want to delete ALL messages? This cannot be undone.')) {
+        localStorage.removeItem('directMessages');
+        refreshAdminPanel();
+        alert('✅ All messages cleared');
+      }
+    });
+
+    // Helper function to escape HTML
+    function escapeHTML(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Helper function to download file
+    function downloadFile(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      alert('✅ File downloaded: ' + filename);
+    }
   </script>
 
 </body>
